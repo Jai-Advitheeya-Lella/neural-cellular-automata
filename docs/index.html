@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural Cellular Automata Demo</title>
+<meta name="description" content="Growing neural cellular automata running live in your browser. Click and drag to damage the pattern and watch it regenerate.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fcfcfb; --panel: #f3f2ef; --ink: #0b0b0b; --muted: #52514e; --line: #e4e3df;
+    --accent: #2a78d6; --accent-ink: #ffffff; --canvas-bg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1a19; --panel: #242423; --ink: #f0efec; --muted: #c3c2b7; --line: #3a3a38;
+            --accent: #3987e5; --accent-ink: #0b0b0b; --canvas-bg: #ffffff; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  p.lead { margin: 0 0 16px; color: var(--muted); }
+  .stage { display: flex; justify-content: center; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 8px; padding: 12px; }
+  canvas { width: min(100%, 576px); aspect-ratio: 1; image-rendering: pixelated; background: var(--canvas-bg);
+           border-radius: 4px; touch-action: none; cursor: crosshair; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 16px; margin: 16px 0; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 0.875rem; color: var(--muted); }
+  select, input[type=range], button { font: inherit; color: var(--ink); }
+  select { padding: 6px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .buttons { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  button { padding: 7px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .status { font-variant-numeric: tabular-nums; font-size: 0.875rem; color: var(--muted); min-height: 1.4em; }
+  .note { font-size: 0.9rem; color: var(--muted); }
+  a { color: var(--accent); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Neural Cellular Automata</h1>
+  <p class="lead">Every cell runs the same tiny neural network on its 3&times;3 neighbourhood. Click and drag on the canvas to damage the pattern; the cells repair it.</p>
+
+  <div class="stage"><canvas id="view" tabindex="0" aria-label="Cellular automaton canvas. Click or drag to erase cells."></canvas></div>
+  <p class="status" id="status" role="status" aria-live="polite">Loading models&hellip;</p>
+
+  <div class="controls">
+    <label><span>Model</span> <select id="model"></select></label>
+    <label><span>Brush radius: <span id="radiusVal">6</span> cells</span> <input id="radius" type="range" min="2" max="16" value="6"></label>
+    <label><span>Speed: <span id="speedVal">2</span> steps per frame</span> <input id="speed" type="range" min="1" max="8" value="2"></label>
+    <label id="rotWrap"><span>Perception rotation: <span id="rotVal">0</span>&deg;</span> <input id="rot" type="range" min="0" max="359" value="0"></label>
+    <div class="buttons">
+      <button id="reset" class="primary" type="button">Reset</button>
+      <button id="pause" type="button">Pause</button>
+      <button id="cut" type="button">Cut in half</button>
+    </div>
+  </div>
+
+  <p class="note" id="about"></p>
+  <p class="note">Runs entirely in your browser (plain JavaScript on the CPU, no server). The weights are exported from the
+  PyTorch models in <a href="https://github.com/Jai-Advitheeya-Lella/neural-cellular-automata">this repository</a>, and a test checks that
+  this runner reproduces the PyTorch rollout numerically. Emoji targets are from
+  <a href="https://github.com/googlefonts/noto-emoji">Noto Emoji</a> (Apache-2.0).</p>
+</main>
+
+<script type="module">
+import { NCA } from "./nca.js";
+
+const canvas = document.getElementById("view");
+const ctx = canvas.getContext("2d");
+const $ = (id) => document.getElementById(id);
+const statusEl = $("status");
+let nca = null, img = null, paused = false, spf = 2, brush = 6, stepsPerSec = 0;
+let lastReport = performance.now(), stepsSince = 0;
+
+const ABOUT = {
+  growing: "Growing model: starts from a single live cell (alpha = 1) and grows into the target. Trained with a sample pool and random circular damage, so it also repairs itself. Try the rotation slider: it rotates the Sobel filters, and the pattern re-grows rotated.",
+  texture: "Texture model: toroidal grid starting from random noise, trained so that its output matches the Gram-matrix statistics of a target texture in VGG-16 features. Clicking replaces cells with fresh noise and the texture grows back."
+};
+
+async function load(name) {
+  const spec = await (await fetch(`models/${name}.json`)).json();
+  nca = new NCA(spec);
+  canvas.width = nca.W; canvas.height = nca.H;
+  img = ctx.createImageData(nca.W, nca.H);
+  $("rotWrap").hidden = nca.kind !== "growing";
+  $("rot").value = 0; $("rotVal").textContent = "0";
+  $("about").textContent = ABOUT[nca.kind];
+  draw();
+}
+
+function draw() { nca.toRGBA(img.data); ctx.putImageData(img, 0, 0); }
+
+function frame(now) {
+  if (nca && !paused) {
+    const t0 = performance.now();
+    for (let i = 0; i < spf && performance.now() - t0 < 24; i++) { nca.step(); stepsSince++; }
+    draw();
+  }
+  if (now - lastReport > 500) {
+    stepsPerSec = Math.round(stepsSince * 1000 / (now - lastReport));
+    stepsSince = 0; lastReport = now;
+    if (nca) statusEl.textContent = `step ${nca.stepCount} | ${nca.W}×${nca.H} cells | ${paused ? "paused" : stepsPerSec + " steps/s"}`;
+  }
+  requestAnimationFrame(frame);
+}
+
+function cellAt(e) {
+  const r = canvas.getBoundingClientRect();
+  return [((e.clientX - r.left) / r.width) * nca.W, ((e.clientY - r.top) / r.height) * nca.H];
+}
+let down = false;
+canvas.addEventListener("pointerdown", (e) => { down = true; canvas.setPointerCapture(e.pointerId); const [x, y] = cellAt(e); nca.damage(x, y, brush); draw(); });
+canvas.addEventListener("pointermove", (e) => { if (down) { const [x, y] = cellAt(e); nca.damage(x, y, brush); draw(); } });
+for (const ev of ["pointerup", "pointercancel"]) canvas.addEventListener(ev, () => { down = false; });
+
+$("reset").onclick = () => { nca.reset(); nca.setAngle(($("rot").value * Math.PI) / 180); draw(); };
+$("pause").onclick = () => { paused = !paused; $("pause").textContent = paused ? "Resume" : "Pause"; };
+$("cut").onclick = () => nca.damage(nca.W * 0.75, nca.H / 2, nca.W / 2);
+$("radius").oninput = (e) => { brush = +e.target.value; $("radiusVal").textContent = brush; };
+$("speed").oninput = (e) => { spf = +e.target.value; $("speedVal").textContent = spf; };
+$("rot").oninput = (e) => { $("rotVal").textContent = e.target.value; nca.setAngle((+e.target.value * Math.PI) / 180); };
+$("model").onchange = (e) => load(e.target.value);
+
+const index = await (await fetch("models/index.json")).json();
+const sel = $("model");
+for (const m of index) { const o = document.createElement("option"); o.value = m.name; o.textContent = m.label; sel.appendChild(o); }
+await load(index[0].name);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
