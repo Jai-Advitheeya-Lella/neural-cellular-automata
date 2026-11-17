@@ -1,0 +1,7 @@
+# PyTorch and torchvision are installed separately (see README) to choose the CPU or CUDA wheel.
+torch>=2.4
+torchvision>=0.19
+numpy==2.5.4
+pillow==13.0.0
+matplotlib==3.11.2
+pytest==9.2.0
