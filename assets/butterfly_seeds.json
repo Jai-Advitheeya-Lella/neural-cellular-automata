@@ -1,0 +1,80 @@
+{
+ "seed0": {
+  "target": "butterfly",
+  "mode": "regenerating",
+  "mse_at_step": {
+   "96": 0.0015647811815142632,
+   "200": 0.0015383445424959064,
+   "500": 0.00413096509873867,
+   "1000": 0.011542977765202522,
+   "2000": 0.02172519639134407
+  },
+  "mse_grown_at_200": 0.0015383445424959064,
+  "damage": {
+   "half": {
+    "mse_after_damage": 0.028587762266397476,
+    "mse_after_regeneration": 0.007655452936887741,
+    "alive_cells_after": 729.5
+   },
+   "disc": {
+    "mse_after_damage": 0.013913379982113838,
+    "mse_after_regeneration": 0.003917569760233164,
+    "alive_cells_after": 731.5
+   }
+  },
+  "trials": 16,
+  "baseline_mse_empty_canvas": 0.04998632147908211
+ },
+ "seed1": {
+  "target": "butterfly",
+  "mode": "regenerating",
+  "mse_at_step": {
+   "96": 0.002401298377662897,
+   "200": 0.0012931866804137826,
+   "500": 0.0006034760153852403,
+   "1000": 0.000882962136529386,
+   "2000": 0.0008910331525839865
+  },
+  "mse_grown_at_200": 0.0012931866804137826,
+  "damage": {
+   "half": {
+    "mse_after_damage": 0.028487734496593475,
+    "mse_after_regeneration": 0.02295634150505066,
+    "alive_cells_after": 532.875
+   },
+   "disc": {
+    "mse_after_damage": 0.013683008030056953,
+    "mse_after_regeneration": 0.0017107082530856133,
+    "alive_cells_after": 745.4375
+   }
+  },
+  "trials": 16,
+  "baseline_mse_empty_canvas": 0.04998632147908211
+ },
+ "seed2": {
+  "target": "butterfly",
+  "mode": "regenerating",
+  "mse_at_step": {
+   "96": 0.0012181415222585201,
+   "200": 0.00030593585688620806,
+   "500": 0.0002603357133921236,
+   "1000": 0.0002752991276793182,
+   "2000": 0.00027360525564290583
+  },
+  "mse_grown_at_200": 0.00030593585688620806,
+  "damage": {
+   "half": {
+    "mse_after_damage": 0.02811049483716488,
+    "mse_after_regeneration": 0.01432164665311575,
+    "alive_cells_after": 628.5625
+   },
+   "disc": {
+    "mse_after_damage": 0.012856930494308472,
+    "mse_after_regeneration": 0.0008733273716643453,
+    "alive_cells_after": 735.3125
+   }
+  },
+  "trials": 16,
+  "baseline_mse_empty_canvas": 0.04998632147908211
+ }
+}

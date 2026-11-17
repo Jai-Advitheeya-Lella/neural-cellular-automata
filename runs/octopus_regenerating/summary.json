@@ -1,0 +1,8 @@
+{
+  "target": "octopus",
+  "mode": "regenerating",
+  "iters": 8000,
+  "train_time_s": 1261.626623392105,
+  "final_loss_avg_last100": 0.0010313316088286228,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

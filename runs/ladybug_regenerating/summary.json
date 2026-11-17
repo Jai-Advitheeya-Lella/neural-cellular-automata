@@ -1,0 +1,8 @@
+{
+  "target": "ladybug",
+  "mode": "regenerating",
+  "iters": 8000,
+  "train_time_s": 1004.8192021846771,
+  "final_loss_avg_last100": 0.0012191643059486523,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

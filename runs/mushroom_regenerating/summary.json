@@ -1,0 +1,8 @@
+{
+  "target": "mushroom",
+  "mode": "regenerating",
+  "iters": 8000,
+  "train_time_s": 508.85807394981384,
+  "final_loss_avg_last100": 0.00039183120898087507,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

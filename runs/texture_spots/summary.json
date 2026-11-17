@@ -1,0 +1,7 @@
+{
+  "texture": "spots",
+  "iters": 4000,
+  "train_time_s": 478.1038188934326,
+  "final_style_loss_avg_last100": 0.010046443128958344,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

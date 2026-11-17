@@ -1,0 +1,8 @@
+{
+  "target": "lizard",
+  "mode": "growing",
+  "iters": 8000,
+  "train_time_s": 1149.2514579296112,
+  "final_loss_avg_last100": 0.00010342479054088471,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

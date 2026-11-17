@@ -1,0 +1,8 @@
+{
+  "target": "butterfly",
+  "mode": "regenerating",
+  "iters": 8000,
+  "train_time_s": 1971.337886095047,
+  "final_loss_avg_last100": 0.000842594757268671,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}

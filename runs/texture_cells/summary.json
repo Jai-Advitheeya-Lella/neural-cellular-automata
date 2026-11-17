@@ -1,0 +1,7 @@
+{
+  "texture": "cells",
+  "iters": 4000,
+  "train_time_s": 444.5702452659607,
+  "final_style_loss_avg_last100": 0.051123517006635665,
+  "device": "NVIDIA GeForce RTX 5070 Ti"
+}
